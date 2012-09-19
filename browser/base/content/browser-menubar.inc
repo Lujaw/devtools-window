@@ -518,6 +518,7 @@
                     label="&webDeveloperMenu.label;"
                     accesskey="&webDeveloperMenu.accesskey;">
                 <menupopup id="menuWebDeveloperPopup">
+                  <menuitem id="menu_devToolbox" observes="devtoolsMenuBroadcaster_DevToolbox" accesskey="B"/>
                   <menuitem id="menu_devToolbar" observes="devtoolsMenuBroadcaster_DevToolbar" accesskey="&devToolbarMenu.accesskey;"/>
                   <menuitem id="webConsole" observes="devtoolsMenuBroadcaster_WebConsole" accesskey="&webConsoleCmd.accesskey;"/>
                   <menuitem id="menu_pageinspect" observes="devtoolsMenuBroadcaster_Inspect" accesskey="&inspectMenu.accesskey;"/>

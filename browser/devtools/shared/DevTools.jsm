@@ -179,6 +179,8 @@ function Toolbox(aTarget, aHost, aDefaultToolId) {
 }
 
 Toolbox.prototype = {
+  URL: "chrome://browser/content/devtools/toolbox/toolbox.xul",
+
   /**
    * Returns a *copy* of the _toolInstances collection.
    */
@@ -231,14 +233,34 @@ Toolbox.prototype = {
    * Opens the toolbox
    */
   open: function TBOX_open() {
+    //if (this._host == gDevTools.HostType.IN_BROWSER) {
+      let gBrowser = this._target.ownerDocument.defaultView.window.gBrowser;
+      let ownerDocument = gBrowser.parentNode.ownerDocument;
 
+      this._splitter = ownerDocument.createElement("splitter");
+      this._splitter.setAttribute("class", "devtools-horizontal-splitter");
+
+      this._frame = ownerDocument.createElement("iframe");
+      this._frame.height = "200px";
+
+      this._nbox = gBrowser.getNotificationBox(this._target.linkedBrowser);
+      this._nbox.appendChild(this._splitter);
+      this._nbox.appendChild(this._frame);
+
+      this._frame.setAttribute("src", this.URL);
+    //}
   },
 
   /**
    * Remove all UI elements, detach from target and clear up
    */
   destroy: function TBOX_destroy() {
+    this._nbox.removeChild(this._splitter);
+    this._nbox.removeChild(this._frame);
 
+    this._splitter = null;
+    this._frame = null;
+    this._nbox = null;
   },
 };
 

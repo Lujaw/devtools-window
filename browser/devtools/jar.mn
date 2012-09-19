@@ -29,3 +29,4 @@ browser.jar:
     content/browser/devtools/commandline.css      (commandline/commandline.css)
     content/browser/devtools/commandlineoutput.xhtml  (commandline/commandlineoutput.xhtml)
     content/browser/devtools/commandlinetooltip.xhtml  (commandline/commandlinetooltip.xhtml)
+    content/browser/devtools/toolbox/toolbox.xul    (toolbox/toolbox.xul)

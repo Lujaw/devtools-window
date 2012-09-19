@@ -88,6 +88,7 @@
 
     <command id="Tools:Search" oncommand="BrowserSearch.webSearch();"/>
     <command id="Tools:Downloads" oncommand="BrowserDownloadsUI();"/>
+    <command id="Tools:DevToolbox" oncommand="gDevTools.openToolbox(gBrowser);"/>
     <command id="Tools:DevToolbar" oncommand="DeveloperToolbar.toggle();" disabled="true" hidden="true"/>
     <command id="Tools:DevToolbarFocus" oncommand="DeveloperToolbar.focusToggle();" disabled="true"/>
     <command id="Tools:WebConsole" oncommand="HUDConsoleUI.toggleHUD();"/>
@@ -187,6 +188,10 @@
     <broadcaster id="socialSidebarBroadcaster" hidden="true"/>
 
     <!-- DevTools broadcasters -->
+    <broadcaster id="devtoolsMenuBroadcaster_DevToolbox"
+                 label="Open Tools"
+                 type="checkbox" autocheck="false"
+                 command="Tools:DevToolbox"/>
     <broadcaster id="devtoolsMenuBroadcaster_DevToolbar"
                  label="&devToolbarMenu.label;"
                  type="checkbox" autocheck="false"

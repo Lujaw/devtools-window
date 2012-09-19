@@ -1191,6 +1191,7 @@
                          class="developer-toolbar-button"
                          label="&devToolbarOtherToolsButton.label;">
             <menupopup position="before_end">
+               <menuitem observes="devtoolsMenuBroadcaster_DevToolbox"/>
                <menuitem observes="devtoolsMenuBroadcaster_DevToolbar"/>
                <menuitem observes="devtoolsMenuBroadcaster_ResponsiveUI"/>
                <menuitem observes="devtoolsMenuBroadcaster_RemoteDebugger"/>
