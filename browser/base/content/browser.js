@@ -7453,6 +7453,20 @@ var Scratchpad = {
   }
 };
 
+var DevTools = {
+  openForCurrentTab: function DT_openForCurrentTab() {
+    let target = {
+      type: gDevTools.TargetType.TAB,
+      value: gBrowser.selectedTab
+    }
+    let host = {
+      type: gDevTools.HostType.IN_BROWSER,
+      element: gBrowser
+    }
+    gDevTools.openToolbox(target, host);
+  }
+}
+
 XPCOMUtils.defineLazyGetter(Scratchpad, "ScratchpadManager", function() {
   let tmp = {};
   Cu.import("resource:///modules/devtools/scratchpad-manager.jsm", tmp);
