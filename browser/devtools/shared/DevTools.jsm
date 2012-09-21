@@ -21,12 +21,12 @@ function DevTools() {
   this._tools = new Map();
   this._toolboxes = new Map();
   this._listeners = {};
-
+/*
   let emitter = new EventEmitter();
   this.on = emitter.on.bind(emitter);
   this.off = emitter.off.bind(emitter);
   this.once = emitter.once.bind(emitter);
-  this._emit = emitter.emit.bind(emitter);
+  this._emit = emitter.emit.bind(emitter); */
 }
 
 DevTools.prototype = {
@@ -123,9 +123,7 @@ DevTools.prototype = {
    * (optionally with aDefaultToolId opened)
    */
   openToolbox: function DT_openToolbox(aTarget, aHost, aDefaultToolId) {
-    if ((aTarget.type == this.TargetType.TAB
-        || aTarget.type == this.TargetType.CHROME)
-        && this._toolboxes.has(aTarget.value)) {
+    if (this._toolboxes.has(aTarget.value)) {
       // only allow one toolbox per target
       return null;
     }
@@ -174,11 +172,6 @@ function Toolbox(aTarget, aHost, aDefaultToolId) {
   this._defaultToolId = aDefaultToolId;
   this._currentToolId = this._defaultToolId;
   this._toolInstances = new Map();
-
-  for (let [toolId, tool] of gDevTools.getToolDefinitions()) {
-    let instance = tool.build();
-    this._toolInstances.set(toolId, instance);
-  }
 }
 
 Toolbox.prototype = {
@@ -236,7 +229,7 @@ Toolbox.prototype = {
    * Opens the toolbox
    */
   open: function TBOX_open() {
-    if (this._host.type == this.HostType.IN_BROWSER) {
+    if (this._host.type == gDevTools.HostType.IN_BROWSER) {
       let hostTab = this._host.element;
       let gBrowser = hostTab.ownerDocument.defaultView.window.gBrowser;
       let ownerDocument = gBrowser.parentNode.ownerDocument;
@@ -251,27 +244,67 @@ Toolbox.prototype = {
       this._nbox.appendChild(this._splitter);
       this._nbox.appendChild(this._frame);
 
-      this._frame.addEventListener("load", this._onLoad, true);
+      this._frame.addEventListener("load", this._onLoad.bind(this), true);
       this._frame.setAttribute("src", this.URL);
-    }
-    else if (this.host.type == this.HostType.TAB) {
-      let gBrowser = this._host.element;
-      let gBrowser = hostTab.ownerDocument.defaultView.window.gBrowser;
-
-      gBrowser.selectedTab = gBrowser.addTab(this.URL);
     }
   },
 
   _onLoad: function TBOX_onLoad() {
     this._frame.removeEventListener("load", this._onLoad, true);
+
+    this._doc = this._frame.contentDocument;
+    this._buildTabs();
+
+    this.selectTool(this._defaultToolId);
   },
 
-  openInTab: function TBOX_openInTab(tab) {
+  _buildTabs: function TBOX_buildTabs() {
+    let tabs = this._doc.getElementById("toolbox-tabs");
+    let deck = this._doc.getElementById("toolbox-deck");
 
+    for (let [id, definition] of gDevTools.getToolDefinitions()) {
+      let radio = this._doc.createElement("radio");
+      radio.setAttribute('label',definition.label);
+      radio.className = "devtools-toolbox-tab"
+      radio.id = "toolbox-tab-" + id;
+      // todo: accessibility
+      radio.addEventListener("click", function() {
+        this._selectTool(id);
+      })
+
+      let vbox = this._doc.createElement("vbox");
+      vbox.className = "devtools-toolbox-panel";
+      vbox.id = "toolbox-panel-" + id;
+
+      let tabFrame = this._doc.createElement('iframe');
+      tabFrame.addEventListener('onload', function() {
+        let instance = definition.build(tabFrame)
+        this._toolInstances.set(id, instance);
+      },true);
+
+      tabFrame.setAttribute('src', definition.url);
+
+      tabs.appendChild(radio);
+      vbox.appendChild(tabFrame);
+      deck.appendChild(vbox);
+    }
   },
 
-  openInNewTab: function TBOX_openInNewTab() {
+  selectTool: function(id) {
+    let tab = this._doc.getElementById("toolbox-tab-" + id);
+    let tabstrip = this._doc.getElementById("toolbox-tabs");
 
+    let index = -1;
+    let tabs = tabstrip.childNodes;
+    for (let i = 0; i < tabs.length; i++) {
+      if (tabs[i] == tab) {
+        index = i;
+      }
+    }
+    tabs.selectedIndex = index;
+
+    let deck = this._doc.getElementById("toolbox-deck");
+    deck.selectedIndex = index;
   },
 
   /**
@@ -284,6 +317,7 @@ Toolbox.prototype = {
     this._splitter = null;
     this._frame = null;
     this._nbox = null;
+    this._doc = null;
   },
 };
 
