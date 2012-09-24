@@ -21,12 +21,12 @@ function DevTools() {
   this._tools = new Map();
   this._toolboxes = new Map();
   this._listeners = {};
-/*
+
   let emitter = new EventEmitter();
   this.on = emitter.on.bind(emitter);
   this.off = emitter.off.bind(emitter);
   this.once = emitter.once.bind(emitter);
-  this._emit = emitter.emit.bind(emitter); */
+  this._emit = emitter.emit.bind(emitter);
 }
 
 DevTools.prototype = {
@@ -172,6 +172,8 @@ function Toolbox(aTarget, aHost, aDefaultToolId) {
   this._defaultToolId = aDefaultToolId;
   this._currentToolId = this._defaultToolId;
   this._toolInstances = new Map();
+
+  this._onLoad = this._onLoad.bind(this);
 }
 
 Toolbox.prototype = {
@@ -232,7 +234,7 @@ Toolbox.prototype = {
     if (this._host.type == gDevTools.HostType.IN_BROWSER) {
       let hostTab = this._host.element;
       let gBrowser = hostTab.ownerDocument.defaultView.window.gBrowser;
-      let ownerDocument = gBrowser.parentNode.ownerDocument;
+      let ownerDocument = gBrowser.ownerDocument;
 
       this._splitter = ownerDocument.createElement("splitter");
       this._splitter.setAttribute("class", "devtools-horizontal-splitter");
@@ -244,13 +246,13 @@ Toolbox.prototype = {
       this._nbox.appendChild(this._splitter);
       this._nbox.appendChild(this._frame);
 
-      this._frame.addEventListener("load", this._onLoad.bind(this), true);
+      this._frame.addEventListener("DOMContentLoaded", this._onLoad, true);
       this._frame.setAttribute("src", this.URL);
     }
   },
 
   _onLoad: function TBOX_onLoad() {
-    this._frame.removeEventListener("load", this._onLoad, true);
+    this._frame.removeEventListener("DOMContentLoaded", this._onLoad, true);
 
     this._doc = this._frame.contentDocument;
     this._buildTabs();
@@ -265,7 +267,7 @@ Toolbox.prototype = {
     for (let [id, definition] of gDevTools.getToolDefinitions()) {
       let radio = this._doc.createElement("radio");
       radio.setAttribute('label',definition.label);
-      radio.className = "devtools-toolbox-tab"
+      radio.className = "toolbox-tab"
       radio.id = "toolbox-tab-" + id;
       // todo: accessibility
       radio.addEventListener("click", function() {
@@ -273,19 +275,16 @@ Toolbox.prototype = {
       })
 
       let vbox = this._doc.createElement("vbox");
-      vbox.className = "devtools-toolbox-panel";
+      vbox.className = "toolbox-panel";
       vbox.id = "toolbox-panel-" + id;
 
-      let tabFrame = this._doc.createElement('iframe');
-      tabFrame.addEventListener('onload', function() {
-        let instance = definition.build(tabFrame)
-        this._toolInstances.set(id, instance);
-      },true);
-
-      tabFrame.setAttribute('src', definition.url);
+      let iframe = this._doc.createElement('iframe');
+      iframe.className = "toolbox-panel-iframe";
+      iframe.id = "toolbox-panel-iframe-" + id;
+      iframe.setAttribute("flex", 1);
 
       tabs.appendChild(radio);
-      vbox.appendChild(tabFrame);
+      vbox.appendChild(iframe);
       deck.appendChild(vbox);
     }
   },
@@ -301,10 +300,25 @@ Toolbox.prototype = {
         index = i;
       }
     }
-    tabs.selectedIndex = index;
+    tabstrip.selectedIndex = index;
 
     let deck = this._doc.getElementById("toolbox-deck");
     deck.selectedIndex = index;
+
+    let iframe = this._doc.getElementById("toolbox-panel-iframe-" + id);
+    if (!iframe.toolLoaded) {
+      // build the tab's content if we haven't already
+      iframe.toolLoaded = true;
+
+      let definition = gDevTools.getToolDefinitions().get(id);
+
+      iframe.addEventListener('DOMContentLoaded', function() {
+        let instance = definition.build(iframe);
+        this._toolInstances.set(id, instance);
+      }.bind(this), true);
+
+      iframe.setAttribute('src', definition.url);
+    }
   },
 
   /**

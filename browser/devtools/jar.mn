@@ -30,3 +30,4 @@ browser.jar:
     content/browser/devtools/commandlineoutput.xhtml  (commandline/commandlineoutput.xhtml)
     content/browser/devtools/commandlinetooltip.xhtml  (commandline/commandlinetooltip.xhtml)
     content/browser/devtools/toolbox/toolbox.xul    (toolbox/toolbox.xul)
+    content/browser/devtools/toolbox/toolbox.css    (toolbox/toolbox.css)

@@ -7466,6 +7466,16 @@ var DevTools = {
       }
     });
 
+    gDevTools.registerTool({
+      id: "test2",
+      label: "Test Tool 2",
+      url: "chrome://browser/content/devtools/toolbox/test.html",
+      build: function(tabFrame) {
+        dump("build called for test tool\n");
+        return {};
+      }
+    });
+
     let target = {
       type: gDevTools.TargetType.TAB,
       value: gBrowser.selectedTab
